@@ -4,210 +4,236 @@ using System.Collections.Generic;
 using System.Linq;
 
 namespace RecipeApp
-{
+{//ingredient class
+    class Ingredient
+    {//ingredients properties
+        public string Name { get; set; } = "";//added ingredient name
+        public double Quantity { get; set; } // Added Quantity property
+        public double Calories { get; set; }//added ingredient calories
+        public string? FoodGroup { get; set; }//added ingredient food group
+    }
+
     class Recipe
     {
-        private List<(string name, string[] details)> recipes;
+        public string Name { get; set; } = "";
+        public List<Ingredient> Ingredients { get; set; } = new List<Ingredient>();
+        public List<string> Steps { get; set; } = new List<string>();
+    }
+    //The class that is responsible for the management of recipes.
+    class RecipeManager
+    {
+        private List<Recipe> recipes;
 
-        public Recipe()
+        public RecipeManager()
         {
-            recipes = new List<(string name, string[] details)>();
-        }
+            recipes = new List<Recipe>();
 
-        // Method to input recipe details
-        public void InputRecipe()
+            // method to add a pre-existing recipes.
+            Recipe existingRecipe = new Recipe
+            {
+                Name = "Creamy Mashed Potatoes and Grilled Chicken Wings",
+                Ingredients = new List<Ingredient>
+                {
+                    new Ingredient { Name = "Potatoes", Quantity = 4, Calories = 200 }, 
+                    new Ingredient { Name = "Milk", Quantity = 1, Calories = 250 }, 
+                    new Ingredient { Name = "Cheese", Quantity = 1, Calories = 100 }, 
+                    new Ingredient { Name = "Salt and Pepper", Quantity = 1, Calories = 150 }, 
+                    new Ingredient { Name = "Chicken Wings", Quantity = 10, Calories = 150 },
+                    new Ingredient { Name = "Spices of Choice", Quantity = 5, Calories = 150 },
+                    new Ingredient { Name = "Mayo", Quantity = 1, Calories = 150 },
+                    new Ingredient { Name = "Nando's hot sauce", Quantity = 1, Calories = 150 } 
+                },
+                Steps = new List<string>
+                {
+                    "Marinate chicken wings using mayo, Nando’s hot sauce and spices.Set aside for an hour.",
+                    "Grill at 180 degrees for 20 minutes",
+                    "In a hot pan, add sauces used above, let it simmer a bit.",
+                    "Toss your grilled chicken inside and let simmer for a while.",
+                    "\r\nReady to Serve",
+                    "Mashed Potatoes:",
+                    " Peel and dice your potatoes.",
+                    "In a pot with water, add salt and boil until soft.",
+                    "Drain water out and add the milk and cheese. Mix and it’s Ready to serve."
+
+                }
+            };
+
+            recipes.Add(existingRecipe);
+        }
+        //Method to add new recipes on the software
+        public void AddRecipe(Recipe recipe)
         {
-            Console.Write("Enter the name of the recipe: ");
-            string name = Console.ReadLine();
-
-            string[] newRecipe = new string[2]; // Array to hold ingredients and steps
-            Console.Write("Enter the number of ingredients: ");
-            int numIngredients = Convert.ToInt32(Console.ReadLine());
-            string[] ingredients = new string[numIngredients];
-
-            for (int i = 0; i < numIngredients; i++)
-            {
-                Console.WriteLine($"Enter details for ingredient {i + 1}:");
-                Console.Write("Name: ");
-                string ingredientName = Console.ReadLine();
-                Console.Write("Quantity: ");
-                string quantity = Console.ReadLine();
-                Console.Write("Unit of Measurement: ");
-                string unit = Console.ReadLine();
-                ingredients[i] = $"{quantity} {unit} of {ingredientName}";
-            }
-            newRecipe[0] = string.Join(";", ingredients); // Store ingredients as a single string separated by semicolon
-
-            Console.Write("\nEnter the number of steps: ");
-            int numSteps = Convert.ToInt32(Console.ReadLine());
-            string[] steps = new string[numSteps];
-
-            for (int i = 0; i < numSteps; i++)
-            {
-                Console.WriteLine($"Enter step {i + 1}:");
-                steps[i] = Console.ReadLine();
-            }
-            newRecipe[1] = string.Join(";", steps); // Store steps as a single string separated by semicolon
-
-            recipes.Add((name, newRecipe)); // Add new recipe to the list with name
+            recipes.Add(recipe);
         }
-
-        // Method to display all recipes
+        //Method to display all the recipes that are available.
         public void DisplayRecipes()
         {
             Console.WriteLine("\nAvailable Recipes:");
-            for (int i = 0; i < recipes.Count; i++)
+            foreach (var recipe in recipes.OrderBy(r => r.Name))
             {
-                Console.WriteLine($"Recipe {i + 1}: {recipes[i].name}");
+                Console.WriteLine(recipe.Name);
             }
             Console.WriteLine();
         }
-
-        // Method to display a single recipe
-        public void DisplayRecipe(int index)
+        //method to display the detailed properties of a certain recipe.
+        public void DisplayRecipeDetails(string recipeName)
         {
-            Console.WriteLine($"Recipe: {recipes[index].name}");
-            string[] recipe = recipes[index].details;
-            Console.WriteLine("Ingredients:");
-            string[] ingredients = recipe[0].Split(';');
-            foreach (string ingredient in ingredients)
+            var recipe = recipes.FirstOrDefault(r => r.Name == recipeName);
+            if (recipe != null)
             {
-                Console.WriteLine(ingredient);
+                Console.WriteLine($"Recipe: {recipe.Name}");
+                Console.WriteLine("Ingredients:");
+                foreach (var ingredient in recipe.Ingredients)
+                {
+                    Console.WriteLine($"{ingredient.Name}: {ingredient.Quantity} {GetUnit(ingredient.Name)} - {ingredient.Calories} calories - Food Group: {ingredient.FoodGroup ?? "N/A"}");
+                }
+                Console.WriteLine("\nSteps:");
+                foreach (var step in recipe.Steps)
+                {
+                    Console.WriteLine(step);
+                }
+                Console.WriteLine($"Total Calories: {recipe.Ingredients.Sum(i => i.Calories)}");
+                if (recipe.Ingredients.Sum(i => i.Calories) > 300)
+                {
+                    Console.WriteLine("Warning: This recipe exceeds 300 calories.");
+                }
             }
-            Console.WriteLine("\nSteps:");
-            string[] steps = recipe[1].Split(';');
-            for (int j = 0; j < steps.Length; j++)
+            else
             {
-                Console.WriteLine($"{j + 1}. {steps[j]}");
+                Console.WriteLine("Recipe not found.");
             }
-            Console.WriteLine();
         }
-
-        // Method to clear all data
-        public void ClearData()
+        //method to clear all th available recipes.
+        public void ClearRecipes()
         {
             recipes.Clear();
-            Console.WriteLine("All data cleared.");
+            Console.WriteLine("All recipes cleared.");
         }
 
-        // Method to add a pre-existing recipe
-        public void AddRecipe(string name, string[] recipe)
+        // Method to get the unit based on ingredient name
+        private string GetUnit(string ingredientName)
         {
-            recipes.Add((name, recipe));
+            
+            return "grams";
         }
 
-        // Method to scale a recipe by a given factor
-        public void ScaleRecipe(int index, double factor)
+        // Method to scale the ingredients of a recipe
+        public void ScaleRecipe(string recipeName, double scaleFactor)
         {
-            string[] recipe = recipes[index].details;
-            string[] ingredients = recipe[0].Split(';');
-            for (int i = 0; i < ingredients.Length; i++)
+            var recipe = recipes.FirstOrDefault(r => r.Name == recipeName);
+            if (recipe != null)
             {
-                string ingredient = ingredients[i];
-                string[] parts = ingredient.Split(' ');
-                double quantity = Convert.ToDouble(parts[0]);
-                string unit = parts[1];
-                double scaledQuantity = quantity * factor;
-                ingredients[i] = $"{scaledQuantity} {unit} of {string.Join(' ', parts.Skip(2))}";
+                foreach (var ingredient in recipe.Ingredients)
+                {
+                    // Scale the quantity of each ingredient
+                    ingredient.Quantity *= scaleFactor;
+                }
+                Console.WriteLine("Recipe scaled successfully!");
             }
-            recipe[0] = string.Join(";", ingredients);
-            recipes[index] = (recipes[index].name, recipe);
-        }
-
-        // Method to get the number of recipes
-        public int GetRecipeCount()
-        {
-            return recipes.Count;
-        }
-
-        // Method to get the name of a recipe by index
-        public string GetRecipeName(int index)
-        {
-            return recipes[index].name;
+            else
+            {
+                Console.WriteLine("Recipe not found.");
+            }
         }
     }
-
+    //this the main program class.
     class Program
     {
         static void Main(string[] args)
         {
-            Recipe recipe = new Recipe();
-
-            // Add a sample recipe
-            string[] sampleRecipe = new string[2];
-            sampleRecipe[0] = "Potatoes, Milk, Cheese, Salt and Paper, Chicken Wings, Spices of Choice, Mayo, Nando’s hot sauce";
-            sampleRecipe[1] = "Marinate chicken wings using mayo, Nando’s hot sauce and spices. Set aside for an hour. Grill at 180 degrees for 20 minutes, In a hot pan, add sauces used above, let it simmer a bit. Toss your grilled chicken inside and let simmer for a while." +
-                "Ready to Serve\r\n\r\nMashed Potatoes:\r\nPeel and dice your potatoes. \r\nIn a pot with water, add salt and boil until soft. \r\nDrain water out and add the milk and cheese. Mix and it’s Ready to serve\r\n\r\nPlate and Serve!!!";
-            recipe.AddRecipe("Creamy Mashed Potatoes and Grilled Chicken wings.\nIngredients:\r\nPotatoes\r\nMilk\r\nCheese\r\nSalt and Paper\r\nChicken Wings\r\nSpices of Choice\r\nMayo\r\nNando’s hot sauce.\r\n" +
-                "\nSteps:\r\nMarinate chicken wings using mayo.\r\nNando’s hot sauce and spices. \r\nSet aside for an hour.\r\nGrill at 180 degrees for 20 minutes \r\nIn a hot pan, add sauces used above, let it simmer a bit.\r\nToss your grilled chicken inside and let simmer for a while.\n" +
-                "\r\nReady to Serve:\r\nMashed Potatoes:\r\nPeel and dice your potatoes. \r\nIn a pot with water, add salt and boil until soft. \r\nDrain water out and add the milk and cheese. Mix and it’s Ready to serve\r\n\r\nPlate and Serve!!!", sampleRecipe); // Added the name "Creamy Mashed Potatoes and Grilled Chicken wings" here
+            RecipeManager recipeManager = new RecipeManager();
 
             while (true)
             {
                 Console.WriteLine("***********************************************************************************************");
-                Console.WriteLine("Welcome To The Ktchen With Zoxolo");
+                Console.WriteLine("Welcome To The Kitchen With Zoxolo");
                 Console.WriteLine("***********************************************************************************************");
-
 
                 Console.WriteLine("\nMenu:");
                 Console.WriteLine("1. Enter New Recipe");
                 Console.WriteLine("2. View Recipes");
-                Console.WriteLine("3. Clear All Data");
+                Console.WriteLine("3. Clear All Recipes");
                 Console.WriteLine("4. Exit");
                 Console.WriteLine("5. Scale a Recipe");
                 Console.WriteLine("***********************************************************************************************");
                 Console.Write("\nEnter your choice: ");
-
 
                 int choice = Convert.ToInt32(Console.ReadLine());
 
                 switch (choice)
                 {
                     case 1:
-                        recipe.InputRecipe();
+                        EnterNewRecipe(recipeManager);
                         break;
                     case 2:
-                        recipe.DisplayRecipes();
+                        recipeManager.DisplayRecipes();
+                        Console.Write("\nEnter the name of the recipe you want to view or press Enter to return to the menu: ");
+                        string recipeName = Console.ReadLine();
+                        if (!string.IsNullOrWhiteSpace(recipeName))
+                        {
+                            recipeManager.DisplayRecipeDetails(recipeName);
+                        }
                         break;
                     case 3:
-                        recipe.ClearData();
+                        recipeManager.ClearRecipes();
                         break;
                     case 4:
                         Environment.Exit(0);
                         break;
                     case 5:
-                        Console.Write("Enter the index of the recipe you want to scale: ");
-                        int index = Convert.ToInt32(Console.ReadLine()) - 1;
-                        Console.Write("Enter the scaling factor (0.5 for half, 2 for double, 3 for triple): ");
-                        double factor = Convert.ToDouble(Console.ReadLine());
-                        recipe.ScaleRecipe(index, factor);
-                        Console.WriteLine($"Recipe {index + 1} scaled by a factor of {factor}.");
-                        break;
-                    case 6:
-                        // Display the specific recipe "Creamy Mashed Potatoes and Grilled Chicken wings"
-                        int recipeIndex = -1;
-                        for (int i = 0; i < recipe.GetRecipeCount(); i++)
-                        {
-                            if (recipe.GetRecipeName(i) == "Creamy Mashed Potatoes and Grilled Chicken wings")
-                            {
-                                recipeIndex = i;
-                                break;
-                            }
-                        }
-                        if (recipeIndex != -1)
-                        {
-                            recipe.DisplayRecipe(recipeIndex);
-                        }
-                        else
-                        {
-                            Console.WriteLine("Recipe not found.");
-                        }
+                        ScaleRecipe(recipeManager);
                         break;
                     default:
-                        Console.WriteLine("Invalid input. Please enter a number between 1 and 6.");
+                        Console.WriteLine("Invalid input. Please enter a number between 1 and 5.");
                         break;
                 }
             }
         }
+
+        static void EnterNewRecipe(RecipeManager recipeManager)
+        {
+            Recipe recipe = new Recipe();
+            Console.Write("Enter the name of the recipe: ");
+            recipe.Name = Console.ReadLine();
+
+            Console.Write("Enter the number of ingredients: ");
+            int numIngredients = Convert.ToInt32(Console.ReadLine());
+            for (int i = 0; i < numIngredients; i++)
+            {
+                Console.WriteLine($"Enter details for ingredient {i + 1}:");
+                Ingredient ingredient = new Ingredient();
+                Console.Write("Name: ");
+                ingredient.Name = Console.ReadLine();
+                Console.Write("Quantity: ");
+                ingredient.Quantity = Convert.ToDouble(Console.ReadLine());
+                Console.Write("Calories: ");
+                ingredient.Calories = Convert.ToDouble(Console.ReadLine());
+                Console.Write("Food Group: ");
+                ingredient.FoodGroup = Console.ReadLine();
+                recipe.Ingredients.Add(ingredient);
+            }
+
+            Console.Write("\nEnter the number of steps: ");
+            int numSteps = Convert.ToInt32(Console.ReadLine());
+            for (int i = 0; i < numSteps; i++)
+            {
+                Console.WriteLine($"Enter step {i + 1}:");
+                recipe.Steps.Add(Console.ReadLine());
+            }
+
+            recipeManager.AddRecipe(recipe);
+
+            Console.WriteLine("\nRecipe added successfully!\n");
+        }
+
+        static void ScaleRecipe(RecipeManager recipeManager)
+        {
+            Console.Write("\nEnter the name of the recipe you want to scale: ");
+            string recipeName = Console.ReadLine();
+            Console.Write("Enter the scaling factor (e.g., 1.5 for 150%): ");
+            double scaleFactor = Convert.ToDouble(Console.ReadLine());
+            recipeManager.ScaleRecipe(recipeName, scaleFactor);
+        }
     }
 }
+
